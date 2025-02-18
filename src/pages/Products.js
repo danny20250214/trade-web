@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Header from "components/headers/light.js";
 import Footer from "components/footers/FiveColumnWithInputForm.js";
+import { product } from "../api";
 
 const Container = styled.div`
   position: relative;
@@ -346,15 +347,128 @@ const menuItems = [
 ];
 
 export default () => {
-  const [mainCategory, setMainCategory] = useState("hdmi");
-  const [subCategory, setSubCategory] = useState("standard");
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // 获取分类树
+  const fetchCategories = async () => {
+    try {
+      const response = await product.getCategoryTree();
+      if (response.code === 200) {
+        setCategories(response.data);
+        // 默认选择第一个分类
+        if (response.data[0]?.children?.[0]) {
+          setSelectedCategory(response.data[0].children[0]);
+        }
+      }
+    } catch (error) {
+      console.error('获取分类树失败:', error);
+    }
+  };
+
+  // 获取产品列表
+  const fetchProducts = async (categoryId) => {
+    setLoading(true);
+    try {
+      const response = await product.getProducts({
+        pageNum: 1,
+        pageSize: 10,
+        categoryId
+      });
+      
+      if (response.code === 200) {
+        const formattedProducts = response.rows.map(item => ({
+          id: item.id,
+          title: item.title,
+          description: item.name,
+          image: item.context.match(/src="([^"]+)"/)?.[1] || '',
+          specs: [
+            `产品编号: ${item.code}`,
+            item.remark ? `备注: ${item.remark}` : '暂无备注',
+            `创建时间: ${new Date(item.createTime).toLocaleDateString()}`
+          ]
+        }));
+        setProducts(formattedProducts);
+      }
+    } catch (error) {
+      console.error('获取产品列表失败:', error);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 初始化加载分类
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // 当选中分类变化时加载产品
+  useEffect(() => {
+    if (selectedCategory?.id) {
+      fetchProducts(selectedCategory.id);
+    }
+  }, [selectedCategory]);
+
+  // 渲染分类菜单
+  const renderCategoryMenu = (categories) => {
+    return categories.map((category) => (
+      <React.Fragment key={category.id}>
+        <MenuItem
+          active={selectedCategory?.id === category.id}
+          onClick={() => !category.disabled && setSelectedCategory(category)}
+          disabled={category.disabled}
+        >
+          {category.label}
+        </MenuItem>
+        {category.children && selectedCategory?.id === category.id && (
+          <SubMenuContainer>
+            {category.children.map((subCategory) => (
+              <SubMenuItem
+                key={subCategory.id}
+                active={selectedCategory?.id === subCategory.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  !subCategory.disabled && setSelectedCategory(subCategory);
+                }}
+                disabled={subCategory.disabled}
+              >
+                {subCategory.label}
+              </SubMenuItem>
+            ))}
+          </SubMenuContainer>
+        )}
+      </React.Fragment>
+    ));
+  };
 
   const renderProducts = () => {
-    const categoryProducts = products[mainCategory];
-    if (typeof categoryProducts === 'object' && !Array.isArray(categoryProducts)) {
-      return categoryProducts[subCategory] || [];
+    if (loading) {
+      return <div style={{ textAlign: 'center', padding: '2rem' }}>加载中...</div>;
     }
-    return categoryProducts || [];
+
+    if (products.length === 0) {
+      return <div style={{ textAlign: 'center', padding: '2rem' }}>暂无产品数据</div>;
+    }
+
+    return products.map((product) => (
+      <ProductCard key={product.id}>
+        <ProductImage>
+          <img src={product.image} alt={product.title} />
+        </ProductImage>
+        <ProductContent>
+          <ProductTitle>{product.title}</ProductTitle>
+          <ProductDescription>{product.description}</ProductDescription>
+          <ProductSpecs>
+            {product.specs.map((spec, index) => (
+              <SpecItem key={index}>{spec}</SpecItem>
+            ))}
+          </ProductSpecs>
+        </ProductContent>
+      </ProductCard>
+    ));
   };
 
   return (
@@ -365,56 +479,11 @@ export default () => {
           <TabsContainer>
             <MenuContainer>
               <MenuTitle>产品分类</MenuTitle>
-              {menuItems.map((item, index) => (
-                <React.Fragment key={index}>
-                  <MenuItem
-                    active={mainCategory === item.key}
-                    onClick={() => {
-                      setMainCategory(item.key);
-                      if (item.children) {
-                        setSubCategory(item.children[0].key);
-                      }
-                    }}
-                  >
-                    {item.label}
-                  </MenuItem>
-                  {item.children && mainCategory === item.key && (
-                    <SubMenuContainer>
-                      {item.children.map((subItem, subIndex) => (
-                        <SubMenuItem
-                          key={subIndex}
-                          active={subCategory === subItem.key}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSubCategory(subItem.key);
-                          }}
-                        >
-                          {subItem.label}
-                        </SubMenuItem>
-                      ))}
-                    </SubMenuContainer>
-                  )}
-                </React.Fragment>
-              ))}
+              {renderCategoryMenu(categories)}
             </MenuContainer>
 
             <ProductGrid>
-              {renderProducts().map((product, index) => (
-                <ProductCard key={index}>
-                  <ProductImage>
-                    <img src={product.image} alt={product.title} />
-                  </ProductImage>
-                  <ProductContent>
-                    <ProductTitle>{product.title}</ProductTitle>
-                    <ProductDescription>{product.description}</ProductDescription>
-                    <ProductSpecs>
-                      {product.specs.map((spec, index) => (
-                        <SpecItem key={index}>{spec}</SpecItem>
-                      ))}
-                    </ProductSpecs>
-                  </ProductContent>
-                </ProductCard>
-              ))}
+              {renderProducts()}
             </ProductGrid>
           </TabsContainer>
         </Content>

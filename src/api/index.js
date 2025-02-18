@@ -13,4 +13,6 @@ export { auth } from './auth';
 export const API_CONFIG = {
   baseURL: process.env.REACT_APP_API_BASE_URL || 'https://protx.cn/manage/',
   timeout: 15000,
-}; 
+};
+
+export { product } from './product'; 
