@@ -18,6 +18,7 @@ import ProfilePage from "pages/Profile";
 import About from "pages/About";
 import PartnerSurvey from "pages/PartnerSurvey";
 import Navigation from "pages/Navigation";
+import ProductDetail from './pages/ProductDetail';
 
 // 初始化主题
 const initTheme = () => {
@@ -87,6 +88,7 @@ export default function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/about" element={<About />} />
             <Route path="/partner-survey" element={<PartnerSurvey />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
           </Routes>
         </Router>
       </ConfigProvider>

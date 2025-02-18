@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Header from "components/headers/light.js";
 import Footer from "components/footers/FiveColumnWithInputForm.js";
 import { product } from "../api";
+import { useNavigate } from "react-router-dom";
 
 const Container = styled.div`
   position: relative;
@@ -47,7 +48,7 @@ const MenuTitle = styled.div`
 const MenuItem = styled.div`
   padding: 1rem 1.5rem;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: ${props => props.active ? '600' : '500'};
   transition: all 0.2s ease;
   border-left: 3px solid transparent;
   background: ${props => props.active ? '#f8fafc' : 'white'};
@@ -66,49 +67,17 @@ const MenuItem = styled.div`
 `;
 
 const SubMenuContainer = styled.div`
-  background: #f8fafc;
+  background: #ffffff;
   border-bottom: 1px solid #e2e8f0;
-`;
-
-const SubMenuItem = styled.div`
-  padding: 0.85rem 1rem 0.85rem 3.5rem;
-  font-size: 0.95rem;
-  color: ${props => props.active ? '#0088ff' : '#64748b'};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-
-  &:hover {
-    color: #0088ff;
-    background: rgba(0, 136, 255, 0.05);
-  }
-
-  &:before {
-    content: '';
-    position: absolute;
-    left: 2rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: ${props => props.active ? '#0088ff' : '#94a3b8'};
-  }
-
-  ${props => props.active && `
-    background: rgba(0, 136, 255, 0.05);
-    font-weight: 500;
-
-    &:after {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: #0088ff;
+  
+  ${MenuItem} {
+    background: ${props => props.active ? '#f1f5f9' : '#ffffff'};
+    font-size: ${props => props.level > 1 ? '0.9rem' : '1rem'};
+    
+    &:hover {
+      background: #f8fafc;
     }
-  `}
+  }
 `;
 
 const ProductGrid = styled.div`
@@ -346,21 +315,84 @@ const menuItems = [
   }
 ];
 
+const CategorySubmenu = ({ category, selectedCategory, onSelect, level = 1 }) => {
+  const isSelected = selectedCategory?.id === category.id;
+  const hasChildren = category.children && category.children.length > 0;
+  const isParentSelected = hasChildren && category.children.some(child => 
+    child.id === selectedCategory?.id || 
+    child.children?.some(grandChild => grandChild.id === selectedCategory?.id)
+  );
+  
+  return (
+    <React.Fragment>
+      <MenuItem
+        active={isSelected}
+        onClick={() => !category.disabled && onSelect(category)}
+        style={{ 
+          paddingLeft: `${level * 1.5}rem`,
+          backgroundColor: isParentSelected ? '#f8fafc' : 'white'
+        }}
+      >
+        {category.label || category.name}
+      </MenuItem>
+      {hasChildren && (isSelected || isParentSelected || level === 1) && (
+        <SubMenuContainer>
+          {category.children.map((subCategory) => (
+            <CategorySubmenu
+              key={subCategory.id}
+              category={subCategory}
+              selectedCategory={selectedCategory}
+              onSelect={onSelect}
+              level={level + 1}
+            />
+          ))}
+        </SubMenuContainer>
+      )}
+    </React.Fragment>
+  );
+};
+
 export default () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // 获取分类树
   const fetchCategories = async () => {
     try {
       const response = await product.getCategoryTree();
       if (response.code === 200) {
-        setCategories(response.data);
+        // 确保数据结构正确
+        const processCategories = (categories) => {
+          return categories.map(category => ({
+            ...category,
+            children: category.children ? processCategories(category.children) : []
+          }));
+        };
+        
+        const processedCategories = processCategories(response.data);
+        setCategories(processedCategories);
+        
         // 默认选择第一个分类
-        if (response.data[0]?.children?.[0]) {
-          setSelectedCategory(response.data[0].children[0]);
+        if (processedCategories.length > 0) {
+          // 找到第一个可用的叶子节点
+          const findFirstLeaf = (cats) => {
+            for (const cat of cats) {
+              if (!cat.children || cat.children.length === 0) {
+                return cat;
+              }
+              const leaf = findFirstLeaf(cat.children);
+              if (leaf) return leaf;
+            }
+            return null;
+          };
+          
+          const firstLeaf = findFirstLeaf(processedCategories);
+          if (firstLeaf) {
+            setSelectedCategory(firstLeaf);
+          }
         }
       }
     } catch (error) {
@@ -379,17 +411,34 @@ export default () => {
       });
       
       if (response.code === 200) {
-        const formattedProducts = response.rows.map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.name,
-          image: item.context.match(/src="([^"]+)"/)?.[1] || '',
-          specs: [
-            `产品编号: ${item.code}`,
-            item.remark ? `备注: ${item.remark}` : '暂无备注',
-            `创建时间: ${new Date(item.createTime).toLocaleDateString()}`
-          ]
-        }));
+        // 修改产品数据的处理方式
+        const formattedProducts = response.rows.map(item => {
+          let decodedContent = '';
+          try {
+            decodedContent = decodeURIComponent(escape(atob(item.context)));
+          } catch (error) {
+            console.error("Base64 解码失败", error);
+            decodedContent = item.context || '';
+          }
+
+          // 确保 specs 是一个数组
+          const specs = [];
+          if (item.code) specs.push(`产品编号: ${item.code}`);
+          if (item.remark) specs.push(`备注: ${item.remark}`);
+          if (item.createTime) specs.push(`创建时间: ${new Date(item.createTime).toLocaleDateString()}`);
+
+          return {
+            id: item.id,
+            title: item.title || '',
+            name: item.name || '',
+            code: item.code || '',
+            description: item.name || '',
+            context: item.context || '',
+            decodedContent: decodedContent,
+            image: decodedContent.match(/src="([^"]+)"/)?.[1] || '',
+            specs: specs // 确保 specs 是一个数组
+          };
+        });
         setProducts(formattedProducts);
       }
     } catch (error) {
@@ -413,34 +462,14 @@ export default () => {
   }, [selectedCategory]);
 
   // 渲染分类菜单
-  const renderCategoryMenu = (categories) => {
+  const renderCategoryMenu = (categories, selectedCategory, onSelect) => {
     return categories.map((category) => (
-      <React.Fragment key={category.id}>
-        <MenuItem
-          active={selectedCategory?.id === category.id}
-          onClick={() => !category.disabled && setSelectedCategory(category)}
-          disabled={category.disabled}
-        >
-          {category.label}
-        </MenuItem>
-        {category.children && selectedCategory?.id === category.id && (
-          <SubMenuContainer>
-            {category.children.map((subCategory) => (
-              <SubMenuItem
-                key={subCategory.id}
-                active={selectedCategory?.id === subCategory.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  !subCategory.disabled && setSelectedCategory(subCategory);
-                }}
-                disabled={subCategory.disabled}
-              >
-                {subCategory.label}
-              </SubMenuItem>
-            ))}
-          </SubMenuContainer>
-        )}
-      </React.Fragment>
+      <CategorySubmenu
+        key={category.id}
+        category={category}
+        selectedCategory={selectedCategory}
+        onSelect={(category) => onSelect(category)}
+      />
     ));
   };
 
@@ -454,18 +483,35 @@ export default () => {
     }
 
     return products.map((product) => (
-      <ProductCard key={product.id}>
+      <ProductCard 
+        onClick={() => {
+          console.log('Navigating with product:', product); // 调试用
+          navigate(`/product/${product.id}`, { 
+            state: { 
+              product: {
+                ...product,
+                specs: product.specs || [], // 确保 specs 存在
+                context: product.context,
+                decodedContent: product.decodedContent
+              } 
+            }
+          });
+        }} 
+        key={product.id}
+      >
         <ProductImage>
           <img src={product.image} alt={product.title} />
         </ProductImage>
         <ProductContent>
           <ProductTitle>{product.title}</ProductTitle>
           <ProductDescription>{product.description}</ProductDescription>
-          <ProductSpecs>
-            {product.specs.map((spec, index) => (
-              <SpecItem key={index}>{spec}</SpecItem>
-            ))}
-          </ProductSpecs>
+          {Array.isArray(product.specs) && product.specs.length > 0 && (
+            <ProductSpecs>
+              {product.specs.map((spec, index) => (
+                <SpecItem key={index}>{spec}</SpecItem>
+              ))}
+            </ProductSpecs>
+          )}
         </ProductContent>
       </ProductCard>
     ));
@@ -479,7 +525,7 @@ export default () => {
           <TabsContainer>
             <MenuContainer>
               <MenuTitle>产品分类</MenuTitle>
-              {renderCategoryMenu(categories)}
+              {renderCategoryMenu(categories, selectedCategory, setSelectedCategory)}
             </MenuContainer>
 
             <ProductGrid>

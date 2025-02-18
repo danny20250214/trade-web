@@ -1,5 +1,15 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# IDE - IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDE - VS Code
+.vscode/
+*.code-workspace
+
 # dependencies
 /node_modules
 /.pnp
@@ -10,6 +20,7 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
