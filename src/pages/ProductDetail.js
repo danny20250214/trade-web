@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import Header from "components/headers/light.js";
@@ -49,9 +49,10 @@ const ProductInfo = styled.div`
     color: #1a202c;
   }
   
-  .product-name {
+  .product-title {
+    font-size: 1.2rem;
     color: #666;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
   
   .product-code {
@@ -196,65 +197,215 @@ const RelatedProductCard = styled.div`
 const ProductDetail = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // 检查并打印完整的 location 对象，用于调试
-  console.log('Location:', location);
-  
-  // 如果没有 state 或 product，重定向到产品列表
-  if (!location.state?.product) {
-    console.log('No product data found, redirecting...');
+  const product = location.state?.product;
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const images = product?.images || [];
+
+  if (!product) {
     navigate('/products');
     return null;
   }
 
-  const product = location.state.product;
-  
-  // 打印产品数据，用于调试
-  console.log('Product data:', product);
+  const handleMouseMove = (e) => {
+    if (!isZoomed) return;
+
+    const image = e.currentTarget;
+    const rect = image.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const percentX = (x / rect.width) * 100;
+    const percentY = (y / rect.height) * 100;
+
+    image.style.transformOrigin = `${percentX}% ${percentY}%`;
+  };
 
   return (
     <>
       <Header />
       <Container>
         <BreadcrumbNav>
-          <a href="/">首页</a> &gt; <a href="/products">产品列表</a> &gt; {product.title || '产品详情'}
+          <a href="/">首页</a> &gt; <a href="/products">产品列表</a> &gt; {product.name}
         </BreadcrumbNav>
-        
+
         <ProductLayout>
           <ImageSection>
-            {product.image && (
-              <img src={product.image} alt={product.title || '产品图片'} />
+            {images.length > 0 ? (
+              <GalleryContainer>
+                <MainImageWrapper>
+                  <MainImage
+                    onMouseEnter={() => setIsZoomed(true)}
+                    onMouseLeave={() => setIsZoomed(false)}
+                    onMouseMove={handleMouseMove}
+                    isZoomed={isZoomed}
+                  >
+                    <img src={images[currentImageIndex]} alt={product.name} />
+                  </MainImage>
+                </MainImageWrapper>
+
+                <ThumbnailStrip>
+                  <ThumbnailScroller>
+                    {images.map((image, index) => (
+                      <ThumbnailItem
+                        key={index}
+                        active={index === currentImageIndex}
+                        onClick={() => setCurrentImageIndex(index)}
+                      >
+                        <img src={image} alt={`Thumbnail ${index + 1}`} />
+                      </ThumbnailItem>
+                    ))}
+                  </ThumbnailScroller>
+                </ThumbnailStrip>
+              </GalleryContainer>
+            ) : (
+              <NoImage>暂无图片</NoImage>
             )}
           </ImageSection>
-          
+
           <ProductInfo>
-            <h1>{product.title || '未命名产品'}</h1>
-            {product.name && <p className="product-name">{product.name}</p>}
-            
-            {product.code && (
-              <div className="product-code">
-                <strong>产品编码：</strong> {product.code}
-              </div>
-            )}
-            
-            {/* 移除 specs 相关的渲染，先专注于显示产品内容 */}
-            <InquiryButton>发送询价</InquiryButton>
+            <h1>{product.name}</h1>
+            {product.title && <p className="product-title">{product.title}</p>}
+
+
+            {<InquiryButton>发送询价</InquiryButton>}
           </ProductInfo>
         </ProductLayout>
-        
+
         <DetailsSection>
           <h2>产品详情</h2>
-          {product.decodedContent && (
-            <div 
-              className="product-content"
-              dangerouslySetInnerHTML={{ __html: product.decodedContent }}
-            />
-          )}
+          <div
+            className="product-content"
+            dangerouslySetInnerHTML={{ __html: product.decodedContent }}
+          />
         </DetailsSection>
       </Container>
       <Footer />
     </>
   );
 };
+
+// 更新样式组件
+const GalleryContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+`;
+
+const MainImageWrapper = styled.div`
+  width: 100%;
+  height: 400px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f8f8f8;
+`;
+
+const MainImage = styled.div`
+  width: 100%;
+  height: 100%;
+  cursor: ${props => props.isZoomed ? 'zoom-out' : 'zoom-in'};
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+    transform: ${props => props.isZoomed ? 'scale(2)' : 'scale(1)'};
+  }
+`;
+
+const ThumbnailStrip = styled.div`
+  width: 100%;
+  padding: 10px 0;
+  position: relative;
+  
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 30px;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  &::before {
+    left: 0;
+    background: linear-gradient(to right, #fff, transparent);
+  }
+  
+  &::after {
+    right: 0;
+    background: linear-gradient(to left, #fff, transparent);
+  }
+`;
+
+const ThumbnailScroller = styled.div`
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 0 5px;
+  scroll-behavior: smooth;
+  
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+    
+    &:hover {
+      background: #666;
+    }
+  }
+`;
+
+const ThumbnailItem = styled.div`
+  flex: 0 0 80px;
+  height: 80px;
+  border: 2px solid ${props => props.active ? '#0088ff' : '#e2e8f0'};
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
+  
+  &:hover {
+    border-color: #0088ff;
+    
+    img {
+      transform: scale(1.1);
+    }
+  }
+`;
+
+const NoImage = styled.div`
+  width: 100%;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  color: #999;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+`;
 
 export default ProductDetail; 

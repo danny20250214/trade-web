@@ -93,42 +93,77 @@ const ProductGrid = styled.div`
   }
 `;
 
-const ProductCard = styled.div`
-  background: white;
-  border-radius: 1rem;
+const ProductName = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-  }
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+`;
+
+const ProductTitle = styled.p`
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 `;
 
 const ProductImage = styled.div`
-  position: relative;
-  height: 240px;
+  width: 100%;
+  height: 200px;
   overflow: hidden;
+  
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.3s ease;
   }
-  &:hover img {
-    transform: scale(1.1);
+  
+  .no-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    color: #999;
+  }
+`;
+
+const ProductCard = styled.div`
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    
+    ${ProductName} {
+      color: #0088ff;
+    }
+    
+    img {
+      transform: scale(1.1);
+    }
   }
 `;
 
 const ProductContent = styled.div`
-  padding: 1.5rem;
-`;
-
-const ProductTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #1a202c;
-  margin-bottom: 0.75rem;
+  padding: 1rem;
 `;
 
 const ProductDescription = styled.p`
@@ -138,21 +173,18 @@ const ProductDescription = styled.p`
 `;
 
 const ProductSpecs = styled.div`
-  border-top: 1px solid #e2e8f0;
-  padding-top: 1rem;
-  font-size: 0.875rem;
-  color: #718096;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 `;
 
-const SpecItem = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  &:before {
-    content: "•";
-    color: #0088ff;
-    margin-right: 0.5rem;
-  }
+const SpecItem = styled.span`
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
 `;
 
 const products = {
@@ -255,7 +287,7 @@ const menuItems = [
       { key: 'standard', label: '标准HDMI线缆' },
       { key: 'micro', label: 'Micro HDMI线缆' },
       { key: 'mini', label: 'Mini HDMI线缆' },
-      { key: 'ultra-slim', label: '超薄HDMI线缆' },
+      { key: 'ultra-slgit remote set-url origin git@github.com:danny20250214/trade-web.gitim', label: '超薄HDMI线缆' },
       { key: 'engineering', label: '工程HDMI线缆' },
       { key: 'vr', label: 'VR线缆' },
       { key: 'hdmi21', label: 'HDMI 2.1' }
@@ -352,7 +384,7 @@ const CategorySubmenu = ({ category, selectedCategory, onSelect, level = 1 }) =>
   );
 };
 
-export default () => {
+const Products = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [products, setProducts] = useState([]);
@@ -411,8 +443,11 @@ export default () => {
       });
       
       if (response.code === 200) {
-        // 修改产品数据的处理方式
         const formattedProducts = response.rows.map(item => {
+          // 处理图片字段，获取第一个图片地址
+          const imageUrls = item.images ? item.images.split(',') : [];
+          const firstImage = imageUrls.length > 0 ? imageUrls[0].trim() : '';
+
           let decodedContent = '';
           try {
             decodedContent = decodeURIComponent(escape(atob(item.context)));
@@ -420,12 +455,6 @@ export default () => {
             console.error("Base64 解码失败", error);
             decodedContent = item.context || '';
           }
-
-          // 确保 specs 是一个数组
-          const specs = [];
-          if (item.code) specs.push(`产品编号: ${item.code}`);
-          if (item.remark) specs.push(`备注: ${item.remark}`);
-          if (item.createTime) specs.push(`创建时间: ${new Date(item.createTime).toLocaleDateString()}`);
 
           return {
             id: item.id,
@@ -435,8 +464,10 @@ export default () => {
             description: item.name || '',
             context: item.context || '',
             decodedContent: decodedContent,
-            image: decodedContent.match(/src="([^"]+)"/)?.[1] || '',
-            specs: specs // 确保 specs 是一个数组
+            // 使用第一个图片地址，如果没有则尝试从内容中提取
+            image: firstImage || decodedContent.match(/src="([^"]+)"/)?.[1] || '',
+            // 保存所有图片地址数组，以备后用
+            images: imageUrls
           };
         });
         setProducts(formattedProducts);
@@ -484,27 +515,29 @@ export default () => {
 
     return products.map((product) => (
       <ProductCard 
-        onClick={() => {
-          console.log('Navigating with product:', product); // 调试用
-          navigate(`/product/${product.id}`, { 
-            state: { 
-              product: {
-                ...product,
-                specs: product.specs || [], // 确保 specs 存在
-                context: product.context,
-                decodedContent: product.decodedContent
-              } 
-            }
-          });
-        }} 
+        onClick={() => navigate(`/product/${product.id}`, { 
+          state: { 
+            product: {
+              ...product,
+              specs: product.specs || [],
+              context: product.context,
+              decodedContent: product.decodedContent,
+              images: product.images
+            } 
+          }
+        })} 
         key={product.id}
       >
         <ProductImage>
-          <img src={product.image} alt={product.title} />
+          {product.image ? (
+            <img src={product.image} alt={product.name} />
+          ) : (
+            <div className="no-image">暂无图片</div>
+          )}
         </ProductImage>
         <ProductContent>
-          <ProductTitle>{product.title}</ProductTitle>
-          <ProductDescription>{product.description}</ProductDescription>
+          <ProductName>{product.name}</ProductName>
+          {product.title && <ProductTitle>{product.title}</ProductTitle>}
           {Array.isArray(product.specs) && product.specs.length > 0 && (
             <ProductSpecs>
               {product.specs.map((spec, index) => (
@@ -537,4 +570,6 @@ export default () => {
       <Footer />
     </>
   );
-}; 
+};
+
+export default Products; 
