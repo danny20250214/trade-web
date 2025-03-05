@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import Header from "components/headers/light.js";
 import Footer from "components/footers/FiveColumnWithInputForm.js";
+import { Modal } from 'antd';
+import { Link, useNavigate } from 'react-router-dom';  // 添加 useNavigate
 
 const Container = styled.div`
   position: relative;
@@ -127,7 +129,32 @@ const solutions = [
   }
 ];
 
-export default () => {
+// 修改 LearnMoreButton 样式组件
+const LearnMoreButton = styled(Link)`
+  display: inline-block;
+  background: #0088ff;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 1rem;
+  text-decoration: none;
+  
+  &:hover {
+    background: #0077ee;
+    color: white;
+  }
+`;
+
+const Solutions = () => {
+  const navigate = useNavigate();
+
+  const handleLearnMore = (type) => {
+    navigate(`/solutions/${type}`);
+  };
+
   return (
     <>
       <Header />
@@ -142,12 +169,7 @@ export default () => {
                 </SolutionImage>
                 <SolutionContent>
                   <SolutionTitle>{solution.title}</SolutionTitle>
-                  <SolutionDescription>
-                    {solution.description}
-                  </SolutionDescription>
-                  <ReadMore href={solution.link}>
-                    了解更多
-                  </ReadMore>
+                  <SolutionDescription>{solution.description}</SolutionDescription>
                 </SolutionContent>
               </SolutionCard>
             ))}
@@ -157,4 +179,6 @@ export default () => {
       <Footer />
     </>
   );
-}; 
+};
+
+export default Solutions;

@@ -47,7 +47,9 @@ export default () => {
     { name: "首页", link: "/" },
     { name: "产品中心", link: "/products" },
     { name: "解决方案", link: "/solutions" },
+/*
     { name: "新闻中心", link: "/news" },
+*/
     { name: "关于我们", link: "/about" }
   ];
 

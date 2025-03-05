@@ -19,6 +19,7 @@ import About from "pages/About";
 import PartnerSurvey from "pages/PartnerSurvey";
 import Navigation from "pages/Navigation";
 import ProductDetail from './pages/ProductDetail';
+import SolutionDetail from "./pages/SolutionDetail";
 
 // 初始化主题
 const initTheme = () => {
@@ -40,10 +41,9 @@ export default function App() {
   React.useEffect(() => {
     initTheme();
     
-    // 监听系统主题变化
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e) => {
-      if (!localStorage.getItem('theme')) {  // 只有在用户没有手动设置主题时才跟随系统
+      if (!localStorage.getItem('theme')) {
         setIsDark(e.matches);
         if (e.matches) {
           document.documentElement.classList.add('dark');
@@ -72,15 +72,13 @@ export default function App() {
       >
         <Router>
           <Routes>
-            {/* 主要页面路由 */}
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
             <Route path="/solutions" element={<Solutions />} />
+            <Route path="/solutions/:type" element={<Solutions />} />
             <Route path="/news" element={<News />} />
             <Route path="/support" element={<Support />} />
             <Route path="/contact" element={<Contact />} />
-            
-            {/* 其他页面路由 */}
             <Route path="/navigation" element={<Navigation />} />
             <Route path="/join" element={<JoinUs />} />
             <Route path="/login" element={<LoginPage />} />
@@ -89,6 +87,8 @@ export default function App() {
             <Route path="/about" element={<About />} />
             <Route path="/partner-survey" element={<PartnerSurvey />} />
             <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/solutions" element={<Solutions />} />
+            <Route path="/solutions/:type" element={<SolutionDetail />} />
           </Routes>
         </Router>
       </ConfigProvider>

@@ -126,7 +126,9 @@ const HeaderComponent = () => {
     { path: "/", label: "首页" },
     { path: "/products", label: "产品中心" },
     { path: "/solutions", label: "解决方案" },
+/*
     { path: "/news", label: "新闻中心" },
+*/
     { path: "/about", label: "关于我们" },
     { path: "/contact", label: "联系我们" }
   ];

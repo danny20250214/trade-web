@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import Header from "components/headers/light.js";
 import Footer from "components/footers/FiveColumnWithInputForm.js";
+import logo from "../images/logo.svg";
 
 const Container = styled.div`
   position: relative;
@@ -91,20 +92,44 @@ export default () => {
             </Description>
             <ImageGrid>
               <ImageCard>
-                <img src="http://www.linkworldgroup.com/uploads/allimg/180802/1-1PQ2161924.jpg" alt="办公会议室" />
-                <ImageCaption>办公会议室</ImageCaption>
+                <img src={require('../images/custom/office.png')} alt="办公室" />
+                <ImageCaption>办公室</ImageCaption>
               </ImageCard>
               <ImageCard>
-                <img src="http://www.linkworldgroup.com/uploads/allimg/180802/1-1PQ2161925.jpg" alt="TDR测试仪" />
-                <ImageCaption>TDR测试仪可靠性测试</ImageCaption>
+                <img src={require('../images/custom/meeting-room.png')} alt="会议室" />
+                <ImageCaption>会议室</ImageCaption>
               </ImageCard>
               <ImageCard>
-                <img src="http://www.linkworldgroup.com/uploads/allimg/180802/1-1PQ2161926.jpg" alt="FQC检验" />
-                <ImageCaption>FQC检验</ImageCaption>
+                <img src={require('../images/custom/tdr.png')} alt="TDR 测试" />
+                <ImageCaption>TDR测试</ImageCaption>
               </ImageCard>
               <ImageCard>
-                <img src="http://www.linkworldgroup.com/uploads/allimg/180802/1-1PQ2161927.jpg" alt="生产线" />
+                <img src={require('../images/custom/reliability.png')} alt="测试机器" />
+                <ImageCaption>测试机器</ImageCaption>
+              </ImageCard>
+              <ImageCard>
+                <img src={require('../images/custom/fqc.png')} alt="FQC 质检" />
+                <ImageCaption>FQC 质检</ImageCaption>
+              </ImageCard>
+              <ImageCard>
+                <img src={require('../images/custom/fqc2.png')} alt="FQC 质检" />
+                <ImageCaption>FQC 质检</ImageCaption>
+              </ImageCard>
+              <ImageCard>
+                <img src={require('../images/custom/production-line.png')} alt="生产线" />
                 <ImageCaption>生产线</ImageCaption>
+              </ImageCard>
+              <ImageCard>
+                <img src={require('../images/custom/production-line2.png')} alt="生产线" />
+                <ImageCaption>生产线</ImageCaption>
+              </ImageCard>
+              <ImageCard>
+                <img src={require('../images/custom/automatic-soldering.png')} alt="自动焊锡" />
+                <ImageCaption>自动焊锡</ImageCaption>
+              </ImageCard>
+              <ImageCard>
+                <img src={require('../images/custom/automatic-tin-dipping.png')} alt="自动浸锡" />
+                <ImageCaption>自动浸锡</ImageCaption>
               </ImageCard>
             </ImageGrid>
           </Section>

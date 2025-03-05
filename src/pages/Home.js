@@ -403,12 +403,13 @@ const products = [
   }
 ];
 
-export default () => {
+// 删除第一个默认导出
+const HomePage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const slides = [
-    "/images/slider/slide1.jpg",
-    "/images/slider/slide2.jpg",
-    "/images/slider/slide3.jpg"
+    require('../images/slider/1.png'),
+    require('../images/slider/2.png'),
+    require('../images/slider/3.png'),
   ];
 
   useEffect(() => {
@@ -422,18 +423,6 @@ export default () => {
     <>
       <Header />
       <Container>
-        <HeroSection>
-          <HeroContent>
-            <Heading>LinkWorld</Heading>
-            <Description>
-              专业的线缆制造商，为您提供高品质的连接解决方案
-            </Description>
-            <ActionButton href="#products">
-              了解更多
-            </ActionButton>
-          </HeroContent>
-        </HeroSection>
-
         {/* 产品轮播 */}
         <Carousel>
           {slides.map((slide, index) => (
@@ -559,3 +548,6 @@ export default () => {
     </>
   );
 }; 
+
+// Add the export statement
+export default HomePage;
