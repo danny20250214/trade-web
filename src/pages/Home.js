@@ -3,7 +3,7 @@ import styled from "styled-components";
 import Header from "components/headers/light.js";
 import Footer from "components/footers/FiveColumnWithInputForm.js";
 import { useNavigate } from 'react-router-dom';
-import { product } from 'api/product';
+import { product } from '../api/product';
 
 // 导入所需图片
 import { ReactComponent as ArrowRightIcon } from "feather-icons/dist/icons/arrow-right.svg";

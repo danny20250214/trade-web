@@ -236,17 +236,137 @@ const RelatedProductCard = styled.div`
   }
 `;
 
+const DetailSection = styled.div`
+  padding: 2rem 0;
+`;
+
+const DetailContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+`;
+
+const ProductTitle = styled.h1`
+  font-size: 2rem;
+  color: #1a202c;
+  margin-bottom: 1rem;
+`;
+
+const ProductDescription = styled.p`
+  font-size: 1.1rem;
+  color: #4a5568;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+`;
+
+const ProductContent = styled.div`
+  margin-top: 2rem;
+  
+  h2 {
+    font-size: 1.5rem;
+    color: #2d3748;
+    margin: 1.5rem 0 1rem;
+  }
+
+  p {
+    color: #4a5568;
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+
+  th, td {
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f7fafc;
+  }
+`;
+
+const ProductContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ImageGallery = styled.div`
+  .main-image {
+    margin-bottom: 1rem;
+    
+    img {
+      width: 100%;
+      height: auto;
+      max-height: 500px;
+      object-fit: contain;
+    }
+  }
+  
+  .thumbnails {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    
+    img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid transparent;
+      
+      &.active {
+        border-color: #0088ff;
+      }
+    }
+  }
+`;
+
+const ProductDetails = styled.div`
+  h1 {
+    font-size: 2rem;
+    color: #1a202c;
+    margin-bottom: 1rem;
+  }
+
+  .product-code {
+    margin: 1rem 0;
+    color: #4a5568;
+  }
+
+  .product-description {
+    font-size: 1.1rem;
+    color: #4a5568;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+`;
+
 // 然后定义主组件
 const ProductDetail = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { product } = location.state || {};
-
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isZoomed, setIsZoomed] = useState(false);
   const [isInquiryModalOpen, setInquiryModalOpen] = useState(false);
 
-  // 处理图片数组的函数
+  // 处理图片数组
   const getImages = (productImages) => {
     if (!productImages) return [];
     if (Array.isArray(productImages)) return productImages;
@@ -272,20 +392,6 @@ const ProductDetail = () => {
     return null;
   }
 
-  const handleMouseMove = (e) => {
-    if (!isZoomed) return;
-
-    const image = e.currentTarget;
-    const rect = image.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const percentX = (x / rect.width) * 100;
-    const percentY = (y / rect.height) * 100;
-
-    image.style.transformOrigin = `${percentX}% ${percentY}%`;
-  };
-
   // 处理咨询记录提交
   const handleInquirySubmit = async (formData) => {
     try {
@@ -308,13 +414,6 @@ const ProductDetail = () => {
     }
   };
 
-  // 添加 handleChat 函数
-  const handleChat = () => {
-    const whatsappNumber = "8613926866959";
-    const messageText = `I'm interested in ${product.name}`;
-    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(messageText)}`, '_blank');
-  };
-
   return (
     <>
       <Header />
@@ -323,82 +422,82 @@ const ProductDetail = () => {
           <a href="/">首页</a> &gt; <a href="/products">产品列表</a> &gt; {product.name}
         </BreadcrumbNav>
 
-        <ProductLayout>
-          <ImageSection>
-            {images.length > 0 ? (
-              <GalleryContainer>
-                <MainImageWrapper>
-                  <MainImage
-                    onMouseEnter={() => setIsZoomed(true)}
-                    onMouseLeave={() => setIsZoomed(false)}
-                    onMouseMove={handleMouseMove}
-                    isZoomed={isZoomed}
-                  >
-                    <img src={images[currentImageIndex]} alt={product.name} />
-                  </MainImage>
-                </MainImageWrapper>
-
-                <ThumbnailStrip>
-                  <ThumbnailScroller>
+        <DetailSection>
+          <DetailContainer>
+            <ProductContainer>
+              <ImageGallery>
+                <div className="main-image">
+                  {images.length > 0 ? (
+                    <img
+                      src={images[currentImageIndex]}
+                      alt={product.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/default-product.png';
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src="/default-product.png"
+                      alt={product.name}
+                    />
+                  )}
+                </div>
+                {images.length > 0 && (
+                  <div className="thumbnails">
                     {images.map((image, index) => (
-                      <ThumbnailItem
+                      <img
                         key={index}
-                        active={index === currentImageIndex}
+                        src={image}
+                        alt={`${product.name} - ${index + 1}`}
+                        className={currentImageIndex === index ? 'active' : ''}
                         onClick={() => setCurrentImageIndex(index)}
-                      >
-                        <img src={image} alt={`Thumbnail ${index + 1}`} />
-                      </ThumbnailItem>
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/default-product.png';
+                        }}
+                      />
                     ))}
-                  </ThumbnailScroller>
-                </ThumbnailStrip>
-              </GalleryContainer>
-            ) : (
-              <NoImage>暂无图片</NoImage>
-            )}
-          </ImageSection>
+                  </div>
+                )}
+              </ImageGallery>
 
-          <ProductInfo>
-            <h1>{product.name}</h1>
-            {product.title && <p className="product-title">{product.title}</p>}
+              <ProductDetails>
+                <h1>{product.name}</h1>
+                {product.code && (
+                  <div className="product-code">
+                    <strong>Product Code:</strong> {product.code}
+                  </div>
+                )}
+                {product.title && (
+                  <div className="product-description">{product.title}</div>
+                )}
+                
+                <ButtonGroup>
+                  <InquiryButton onClick={() => setInquiryModalOpen(true)}>
+                    <EmailIcon />
+                    Send Inquiry
+                  </InquiryButton>
+                  <ChatButton onClick={() => {
+                    const whatsappNumber = "8613926866959";
+                    const messageText = `I'm interested in ${product.name}`;
+                    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(messageText)}`, '_blank');
+                  }}>
+                    <WhatsAppIcon />
+                    Chat Now
+                  </ChatButton>
+                </ButtonGroup>
 
-            <ButtonGroup>
-              <InquiryButton onClick={() => setInquiryModalOpen(true)}>
-                <EmailIcon />
-                发送询价
-              </InquiryButton>
-              <ChatButton onClick={handleChat}>
-                <WhatsAppIcon />
-                在线咨询
-              </ChatButton>
-            </ButtonGroup>
-
-            <SocialMediaBar>
-              <SocialButton href="https://www.facebook.com/your-page" target="_blank">
-                <FacebookIcon />
-              </SocialButton>
-              <SocialButton href="https://twitter.com/your-handle" target="_blank">
-                <TwitterIcon />
-              </SocialButton>
-              <SocialButton href="https://www.linkedin.com/company/your-company" target="_blank">
-                <LinkedInIcon />
-              </SocialButton>
-              <SocialButton onClick={() => window.alert('WeChat ID: YourWeChatID')}>
-                <WeChatIcon />
-              </SocialButton>
-              <SocialButton onClick={() => window.alert('QQ: YourQQNumber')}>
-                <QQIcon />
-              </SocialButton>
-            </SocialMediaBar>
-          </ProductInfo>
-        </ProductLayout>
-
-        <DetailsSection>
-          <h2>产品详情</h2>
-          <div
-            className="product-content"
-            dangerouslySetInnerHTML={{ __html: product.decodedContent }}
-          />
-        </DetailsSection>
+                {product.context && (
+                  <ProductContent>
+                    <h2>Product Details</h2>
+                    <div dangerouslySetInnerHTML={{ __html: product.context }} />
+                  </ProductContent>
+                )}
+              </ProductDetails>
+            </ProductContainer>
+          </DetailContainer>
+        </DetailSection>
 
         {/* 询价弹框 */}
         <Modal
