@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Header from "components/headers/light.js";
 import Footer from "components/footers/FiveColumnWithInputForm.js";
+import { useNavigate } from 'react-router-dom';
+import { product } from 'api/product';
 
 // 导入所需图片
 import { ReactComponent as ArrowRightIcon } from "feather-icons/dist/icons/arrow-right.svg";
@@ -276,10 +278,9 @@ const PartnerLogo = styled.img`
   width: 100%;
   max-width: 120px;
   margin: 0 auto;
-  filter: grayscale(100%);
-  transition: filter 0.3s ease;
+  transition: transform 0.3s ease;
   &:hover {
-    filter: grayscale(0);
+    transform: scale(1.05);
   }
 `;
 
@@ -360,57 +361,50 @@ const CarouselImage = styled.img`
   object-fit: cover;
 `;
 
-// 在 export default 组件内添加产品部分
-const products = [
-  {
-    category: "HDMI系列",
-    name: "8K HDMI 2.1光纤线缆",
-    description: "支持8K@60Hz、4K@120Hz超高清视频传输",
-    image: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?ixlib=rb-1.2.1",
-    badge: "新品",
-    features: [
-      "48Gbps超高带宽",
-      "支持动态HDR",
-      "最大传输距离100米",
-      "向下兼容HDMI 2.0"
-    ]
-  },
-  {
-    category: "USB系列",
-    name: "USB4 Type-C线缆",
-    description: "全功能USB4接口，支持高速数据传输",
-    image: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?ixlib=rb-1.2.1",
-    badge: "热销",
-    features: [
-      "40Gbps传输速率",
-      "100W快速充电",
-      "8K视频传输",
-      "雷电3兼容"
-    ]
-  },
-  {
-    category: "光纤系列",
-    name: "工业级光纤连接器",
-    description: "高可靠性光纤传输解决方案",
-    image: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?ixlib=rb-1.2.1",
-    badge: "专业",
-    features: [
-      "IP67防护等级",
-      "抗拉抗压",
-      "极低信号损耗",
-      "使用寿命长"
-    ]
+const ProductItem = styled.div`
+  cursor: pointer;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  
+  &:hover {
+    transform: translateY(-5px);
   }
-];
+`;
 
-// 删除第一个默认导出
-const HomePage = () => {
+const Home = () => {
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const slides = [
     require('../images/slider/1.png'),
     require('../images/slider/2.png'),
     require('../images/slider/3.png'),
   ];
+  const [products, setProducts] = useState(null);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 8,
+    total: 0
+  });
+  const [loading, setLoading] = useState(false);
+
+  const fetchProducts = async (pageNum = 1) => {
+    try {
+      const response = await product.getProducts({
+        pageNum,
+        pageSize: 10
+      });
+      console.log('API Response:', response);
+      if (response.code === 200) {
+        setProducts(response);
+      }
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -419,10 +413,26 @@ const HomePage = () => {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // 处理加载更多
+  const handleLoadMore = () => {
+    if (!loading && pagination.current * pagination.pageSize < pagination.total) {
+      fetchProducts(pagination.current + 1);
+    }
+  };
+
+  // 处理产品点击
+  const handleProductClick = (product) => {
+    navigate(`/product/${product.id}`, { state: { product } });
+  };
+
   return (
-    <>
+    <Container>
       <Header />
-      <Container>
+      <HeroSection>
         {/* 产品轮播 */}
         <Carousel>
           {slides.map((slide, index) => (
@@ -453,101 +463,144 @@ const HomePage = () => {
             </StatBox>
           </StatsGrid>
         </StatsSection>
+      </HeroSection>
+      
+      <ProductSection id="products">
+        <ProductContainer>
+          <ProductHeader>
+            <ProductTitle>产品中心</ProductTitle>
+            <ProductSubtitle>
+              专业的线缆制造技术，为您提供全方位的连接解决方案
+            </ProductSubtitle>
+          </ProductHeader>
+          
+          <div className="product-list">
+            {products && products.rows && products.rows.map((product) => (
+              <ProductItem 
+                key={product.id} 
+                onClick={() => handleProductClick(product)}
+              >
+                <div className="product-image">
+                  {product.images && (
+                    <img 
+                      src={product.images.split(',')[0]} 
+                      alt={product.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/default-product.png';
+                      }}
+                    />
+                  )}
+                </div>
+                <div className="product-info">
+                  <h3>{product.name}</h3>
+                  <p>{product.title}</p>
+                </div>
+              </ProductItem>
+            ))}
+          </div>
+        </ProductContainer>
+      </ProductSection>
 
-        <ProductSection>
-          <ProductContainer>
-            <ProductHeader>
-              <ProductTitle>产品中心</ProductTitle>
-              <ProductSubtitle>
-                专业的线缆制造技术，为您提供全方位的连接解决方案
-              </ProductSubtitle>
-            </ProductHeader>
-            
-            <ProductGrid>
-              {products.map((product, index) => (
-                <ProductCard key={index}>
-                  <ProductImage>
-                    <img src={product.image} alt={product.name} />
-                    {product.badge && <ProductBadge>{product.badge}</ProductBadge>}
-                  </ProductImage>
-                  <ProductContent>
-                    <ProductCategory>{product.category}</ProductCategory>
-                    <ProductName>{product.name}</ProductName>
-                    <ProductDescription>{product.description}</ProductDescription>
-                    <ProductFeatures>
-                      {product.features.map((feature, idx) => (
-                        <ProductFeature key={idx}>
-                          <FeatureIcon>•</FeatureIcon>
-                          {feature}
-                        </ProductFeature>
-                      ))}
-                    </ProductFeatures>
-                  </ProductContent>
-                </ProductCard>
-              ))}
-            </ProductGrid>
-          </ProductContainer>
-        </ProductSection>
+      {/* 合作伙伴logo墙 */}
+      <PartnersSection>
+        <ProductContainer>
+          <ProductHeader>
+            <ProductTitle>全球客户与合作伙伴</ProductTitle>
+            <ProductSubtitle>
+              我们与全球知名企业建立了长期稳定的合作关系
+            </ProductSubtitle>
+          </ProductHeader>
+          <PartnersGrid>
+            <PartnerLogo src={require("../images/log/lenovo.png")} alt="Lenovo" />
+            <PartnerLogo src={require("../images/log/img.png")} alt="LG" />
+            <PartnerLogo src={require("../images/log/img_2.png")} alt="Griffin" />
+            <PartnerLogo src={require("../images/log/img_3.png")} alt="Alpine" />
+            <PartnerLogo src={require("../images/log/img_4.png")} alt="Gemalto" />
+            <PartnerLogo src={require("../images/log/img_5.png")} alt="3M" />
+            <PartnerLogo src={require("../images/log/img_6.png")} alt="3M" />
+            <PartnerLogo src={require("../images/log/img_7.png")} alt="3M" />
+            <PartnerLogo src={require("../images/log/img_8.png")} alt="3M" />
+            <PartnerLogo src={require("../images/log/img_9.png")} alt="3M" />
+            <PartnerLogo src={require("../images/log/img_10.png")} alt="3M" />
+            <PartnerLogo src={require("../images/log/img_11.png")} alt="3M" />
+          </PartnersGrid>
+        </ProductContainer>
+      </PartnersSection>
 
-        {/* 合作伙伴logo墙 */}
-        <PartnersSection>
-          <ProductContainer>
-            <ProductHeader>
-              <ProductTitle>全球客户与合作伙伴</ProductTitle>
-              <ProductSubtitle>
-                我们与全球知名企业建立了长期稳定的合作关系
-              </ProductSubtitle>
-            </ProductHeader>
-            <PartnersGrid>
-              <PartnerLogo src="http://www.linkworldgroup.com/uploads/201817542/small/lenovo-logo53267954587.jpg" alt="Lenovo" />
-              <PartnerLogo src="http://www.linkworldgroup.com/uploads/201817542/small/lg-logo53267954587.jpg" alt="LG" />
-              <PartnerLogo src="http://www.linkworldgroup.com/uploads/201817542/small/griffin-logo53267954587.jpg" alt="Griffin" />
-              <PartnerLogo src="http://www.linkworldgroup.com/uploads/201817542/small/alpine-logo53267954587.jpg" alt="Alpine" />
-              <PartnerLogo src="http://www.linkworldgroup.com/uploads/201817542/small/gemalto-logo53267954587.jpg" alt="Gemalto" />
-              <PartnerLogo src="http://www.linkworldgroup.com/uploads/201817542/small/3m-logo53267954587.jpg" alt="3M" />
-            </PartnersGrid>
-          </ProductContainer>
-        </PartnersSection>
+      <NewsSection>
+        <NewsList>
+          <NewsItem>
+            <NewsDate>2024-03-20</NewsDate>
+            <NewsTitle>公司成功参展2024年香港春季电子展</NewsTitle>
+          </NewsItem>
+          <NewsItem>
+            <NewsDate>2024-03-15</NewsDate>
+            <NewsTitle>新一代8K HDMI线缆正式投产</NewsTitle>
+          </NewsItem>
+          <NewsItem>
+            <NewsDate>2024-03-10</NewsDate>
+            <NewsTitle>获得ISO 14001环境管理体系认证</NewsTitle>
+          </NewsItem>
+        </NewsList>
+      </NewsSection>
 
-        <NewsSection>
-          <NewsList>
-            <NewsItem>
-              <NewsDate>2024-03-20</NewsDate>
-              <NewsTitle>公司成功参展2024年香港春季电子展</NewsTitle>
-            </NewsItem>
-            <NewsItem>
-              <NewsDate>2024-03-15</NewsDate>
-              <NewsTitle>新一代8K HDMI线缆正式投产</NewsTitle>
-            </NewsItem>
-            <NewsItem>
-              <NewsDate>2024-03-10</NewsDate>
-              <NewsTitle>获得ISO 14001环境管理体系认证</NewsTitle>
-            </NewsItem>
-          </NewsList>
-        </NewsSection>
-
-        {/* 联系我们区域 */}
-        <ContactSection>
-          <ContactGrid>
-            <ContactInfo>
-              <h2 style={{fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '1.5rem'}}>联系我们</h2>
-              <p style={{marginBottom: '1rem'}}>电话：+86 XXX XXXX XXXX</p>
-              <p style={{marginBottom: '1rem'}}>邮箱：info@example.com</p>
-              <p>地址：广东省深圳市XXXXXX</p>
-            </ContactInfo>
-            <ContactForm>
-              <Input type="text" placeholder="您的姓名" />
-              <Input type="email" placeholder="电子邮箱" />
-              <TextArea rows="4" placeholder="请输入您的留言"></TextArea>
-              <SubmitButton type="submit">发送信息</SubmitButton>
-            </ContactForm>
-          </ContactGrid>
-        </ContactSection>
-      </Container>
+      {/* 联系我们区域 */}
+      <ContactSection>
+        <ContactGrid>
+          <ContactInfo>
+            <h2 style={{fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '1.5rem'}}>联系我们</h2>
+            <p style={{marginBottom: '1rem'}}>电话：+86 XXX XXXX XXXX</p>
+            <p style={{marginBottom: '1rem'}}>邮箱：info@example.com</p>
+            <p>地址：广东省深圳市XXXXXX</p>
+          </ContactInfo>
+          <ContactForm>
+            <Input type="text" placeholder="您的姓名" />
+            <Input type="email" placeholder="电子邮箱" />
+            <TextArea rows="4" placeholder="请输入您的留言"></TextArea>
+            <SubmitButton type="submit">发送信息</SubmitButton>
+          </ContactForm>
+        </ContactGrid>
+      </ContactSection>
+      
       <Footer />
-    </>
-  );
-}; 
+      <style jsx>{`
+        .product-list {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          gap: 20px;
+          padding: 20px;
+        }
 
-// Add the export statement
-export default HomePage;
+        .product-image {
+          width: 100%;
+          height: 200px;
+          overflow: hidden;
+        }
+
+        .product-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .product-info {
+          padding: 15px;
+        }
+
+        .product-info h3 {
+          margin: 0 0 10px;
+          font-size: 18px;
+        }
+
+        .product-info p {
+          margin: 0;
+          color: #666;
+          font-size: 14px;
+        }
+      `}</style>
+    </Container>
+  );
+};
+
+export default Home;
