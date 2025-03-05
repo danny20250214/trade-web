@@ -528,22 +528,6 @@ const Home = () => {
         </ProductContainer>
       </PartnersSection>
 
-      <NewsSection>
-        <NewsList>
-          <NewsItem>
-            <NewsDate>2024-03-20</NewsDate>
-            <NewsTitle>公司成功参展2024年香港春季电子展</NewsTitle>
-          </NewsItem>
-          <NewsItem>
-            <NewsDate>2024-03-15</NewsDate>
-            <NewsTitle>新一代8K HDMI线缆正式投产</NewsTitle>
-          </NewsItem>
-          <NewsItem>
-            <NewsDate>2024-03-10</NewsDate>
-            <NewsTitle>获得ISO 14001环境管理体系认证</NewsTitle>
-          </NewsItem>
-        </NewsList>
-      </NewsSection>
 
       {/* 联系我们区域 */}
       <ContactSection>

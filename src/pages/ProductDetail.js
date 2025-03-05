@@ -29,7 +29,8 @@ const BaseButton = styled.button`
 const ButtonGroup = styled.div`
   display: flex;
   gap: 1rem;
-  margin-top: 2rem;
+  margin: 2rem 0;
+  justify-content: flex-start;
 `;
 
 const InquiryButton = styled(BaseButton)`
@@ -243,7 +244,162 @@ const DetailSection = styled.div`
 const DetailContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0;
+`;
+
+const ContentLayout = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const TopSection = styled.div`
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(300px, 1fr);
+  gap: 2rem;
+  align-items: start;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ImageGallery = styled.div`
+  width: 100%;
+  
+  .main-image {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    img {
+      width: 100%;
+      height: 400px; // 固定高度以匹配右侧内容
+      object-fit: contain;
+      display: block;
+      background: #f8f8f8;
+    }
+  }
+  
+  .thumbnails {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 0.5rem 0;
+    
+    img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+      
+      &.active {
+        border-color: #0088ff;
+      }
+      
+      &:hover {
+        transform: translateY(-2px);
+      }
+    }
+  }
+`;
+
+const ProductBasicInfo = styled.div`
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  h1 {
+    font-size: 2rem;
+    color: #1a202c;
+    margin-bottom: 0.5rem;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  .product-code {
+    color: #4a5568;
+    text-align: left;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .product-description {
+    font-size: 1.1rem;
+    color: #4a5568;
+    line-height: 1.6;
+    text-align: left;
+  }
+`;
+
+const ProductContent = styled.div`
+  margin-top: 2rem;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  
+  h2 {
+    font-size: 1.5rem;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  div {
+    text-align: left;
+  }
+
+  p {
+    color: #4a5568;
+    line-height: 1.8;
+    margin-bottom: 1rem;
+    text-align: left;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+    display: block;
+    border-radius: 4px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    
+    th, td {
+      border: 1px solid #e2e8f0;
+      padding: 0.75rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f7fafc;
+      font-weight: 600;
+    }
+  }
+
+  ul, ol {
+    padding-left: 1.5rem;
+    margin: 1rem 0;
+  }
+
+  li {
+    margin: 0.5rem 0;
+    color: #4a5568;
+  }
 `;
 
 const ProductTitle = styled.h1`
@@ -259,102 +415,13 @@ const ProductDescription = styled.p`
   line-height: 1.6;
 `;
 
-const ProductContent = styled.div`
-  margin-top: 2rem;
-  
-  h2 {
-    font-size: 1.5rem;
-    color: #2d3748;
-    margin: 1.5rem 0 1rem;
-  }
-
-  p {
-    color: #4a5568;
-    line-height: 1.8;
-    margin-bottom: 1rem;
-  }
-
-  img {
-    max-width: 100%;
-    height: auto;
-    margin: 1rem 0;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1rem 0;
-  }
-
-  th, td {
-    border: 1px solid #e2e8f0;
-    padding: 0.75rem;
-    text-align: left;
-  }
-
-  th {
-    background-color: #f7fafc;
-  }
-`;
-
 const ProductContainer = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(300px, 1fr) minmax(400px, 2fr);
   gap: 3rem;
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-  }
-`;
-
-const ImageGallery = styled.div`
-  .main-image {
-    margin-bottom: 1rem;
-    
-    img {
-      width: 100%;
-      height: auto;
-      max-height: 500px;
-      object-fit: contain;
-    }
-  }
-  
-  .thumbnails {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    
-    img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      cursor: pointer;
-      border: 2px solid transparent;
-      
-      &.active {
-        border-color: #0088ff;
-      }
-    }
-  }
-`;
-
-const ProductDetails = styled.div`
-  h1 {
-    font-size: 2rem;
-    color: #1a202c;
-    margin-bottom: 1rem;
-  }
-
-  .product-code {
-    margin: 1rem 0;
-    color: #4a5568;
-  }
-
-  .product-description {
-    font-size: 1.1rem;
-    color: #4a5568;
-    margin-bottom: 2rem;
-    line-height: 1.6;
   }
 `;
 
@@ -424,78 +491,80 @@ const ProductDetail = () => {
 
         <DetailSection>
           <DetailContainer>
-            <ProductContainer>
-              <ImageGallery>
-                <div className="main-image">
-                  {images.length > 0 ? (
-                    <img
-                      src={images[currentImageIndex]}
-                      alt={product.name}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/default-product.png';
-                      }}
-                    />
-                  ) : (
-                    <img
-                      src="/default-product.png"
-                      alt={product.name}
-                    />
-                  )}
-                </div>
-                {images.length > 0 && (
-                  <div className="thumbnails">
-                    {images.map((image, index) => (
+            <ContentLayout>
+              <TopSection>
+                <ImageGallery>
+                  <div className="main-image">
+                    {images.length > 0 ? (
                       <img
-                        key={index}
-                        src={image}
-                        alt={`${product.name} - ${index + 1}`}
-                        className={currentImageIndex === index ? 'active' : ''}
-                        onClick={() => setCurrentImageIndex(index)}
+                        src={images[currentImageIndex]}
+                        alt={product.name}
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.src = '/default-product.png';
                         }}
                       />
-                    ))}
+                    ) : (
+                      <img
+                        src="/default-product.png"
+                        alt={product.name}
+                      />
+                    )}
                   </div>
-                )}
-              </ImageGallery>
+                  {images.length > 0 && (
+                    <div className="thumbnails">
+                      {images.map((image, index) => (
+                        <img
+                          key={index}
+                          src={image}
+                          alt={`${product.name} - ${index + 1}`}
+                          className={currentImageIndex === index ? 'active' : ''}
+                          onClick={() => setCurrentImageIndex(index)}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/default-product.png';
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </ImageGallery>
 
-              <ProductDetails>
-                <h1>{product.name}</h1>
-                {product.code && (
-                  <div className="product-code">
-                    <strong>Product Code:</strong> {product.code}
-                  </div>
-                )}
-                {product.title && (
-                  <div className="product-description">{product.title}</div>
-                )}
-                
-                <ButtonGroup>
-                  <InquiryButton onClick={() => setInquiryModalOpen(true)}>
-                    <EmailIcon />
-                    Send Inquiry
-                  </InquiryButton>
-                  <ChatButton onClick={() => {
-                    const whatsappNumber = "8613926866959";
-                    const messageText = `I'm interested in ${product.name}`;
-                    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(messageText)}`, '_blank');
-                  }}>
-                    <WhatsAppIcon />
-                    Chat Now
-                  </ChatButton>
-                </ButtonGroup>
+                <ProductBasicInfo>
+                  <h1>{product.name}</h1>
+                  {product.code && (
+                    <div className="product-code">
+                      <strong>Product Code:</strong> {product.code}
+                    </div>
+                  )}
+                  {product.title && (
+                    <div className="product-description">{product.title}</div>
+                  )}
+                  
+                  <ButtonGroup>
+                    <InquiryButton onClick={() => setInquiryModalOpen(true)}>
+                      <EmailIcon />
+                      Send Inquiry
+                    </InquiryButton>
+                    <ChatButton onClick={() => {
+                      const whatsappNumber = "8613926866959";
+                      const messageText = `I'm interested in ${product.name}`;
+                      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(messageText)}`, '_blank');
+                    }}>
+                      <WhatsAppIcon />
+                      Chat Now
+                    </ChatButton>
+                  </ButtonGroup>
+                </ProductBasicInfo>
+              </TopSection>
 
-                {product.context && (
-                  <ProductContent>
-                    <h2>Product Details</h2>
-                    <div dangerouslySetInnerHTML={{ __html: product.context }} />
-                  </ProductContent>
-                )}
-              </ProductDetails>
-            </ProductContainer>
+              {product.context && (
+                <ProductContent>
+                  <h2>产品详情</h2>
+                  <div dangerouslySetInnerHTML={{ __html: product.context }} />
+                </ProductContent>
+              )}
+            </ContentLayout>
           </DetailContainer>
         </DetailSection>
 
