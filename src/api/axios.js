@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 定义默认配置
 const DEFAULT_CONFIG = {
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://192.176.1.216:8080',
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://119.23.154.221:8080',
   timeout: 15000,
 };
 

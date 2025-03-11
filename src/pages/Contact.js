@@ -180,65 +180,83 @@ const Contact = () => {
               </ContactInfo>
             </ContactCard>
 
-            {/* 询价表单 */}
             <ContactCard>
               <Form onSubmit={handleSubmit}>
                 <FormGroup>
-                  <Label>姓名 *</Label>
-                  <Input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => {
-                      setFormData({...formData, name: e.target.value});
-                      setErrors({...errors, name: ''});
-                    }}
-                  />
-                  {errors.name && <ErrorText>{errors.name}</ErrorText>}
+                  <Label>姓名<span className="required">*</span></Label>
+                  <div>
+                    <Input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => {
+                        setFormData({...formData, name: e.target.value});
+                        setErrors({...errors, name: ''});
+                      }}
+                      placeholder="请输入您的姓名"
+                    />
+                    {errors.name && <ErrorText>{errors.name}</ErrorText>}
+                  </div>
                 </FormGroup>
+
                 <FormGroup>
                   <Label>邮箱</Label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => {
-                      setFormData({...formData, email: e.target.value});
-                      setErrors({...errors, email: '', phone: ''});
-                    }}
-                  />
-                  {errors.email && <ErrorText>{errors.email}</ErrorText>}
+                  <div>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => {
+                        setFormData({...formData, email: e.target.value});
+                        setErrors({...errors, email: '', phone: ''});
+                      }}
+                      placeholder="请输入您的邮箱"
+                    />
+                    {errors.email && <ErrorText>{errors.email}</ErrorText>}
+                  </div>
                 </FormGroup>
+
                 <FormGroup>
                   <Label>电话</Label>
-                  <Input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => {
-                      setFormData({...formData, phone: e.target.value});
-                      setErrors({...errors, email: '', phone: ''});
-                    }}
-                  />
-                  {errors.phone && <ErrorText>{errors.phone}</ErrorText>}
+                  <div>
+                    <Input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => {
+                        setFormData({...formData, phone: e.target.value});
+                        setErrors({...errors, email: '', phone: ''});
+                      }}
+                      placeholder="请输入您的电话"
+                    />
+                    {errors.phone && <ErrorText>{errors.phone}</ErrorText>}
+                  </div>
                 </FormGroup>
+
                 <FormGroup>
                   <Label>公司</Label>
-                  <Input
-                    type="company"
-                    value={formData.phone}
-                    onChange={(e) => {
-                      setFormData({...formData, company: e.target.value});
-                      setErrors({...errors, company: ''});
-                    }}
-                  />
-                  {errors.company && <ErrorText>{errors.company}</ErrorText>}
+                  <div>
+                    <Input
+                      type="text"
+                      value={formData.company}
+                      onChange={(e) => {
+                        setFormData({...formData, company: e.target.value});
+                        setErrors({...errors, company: ''});
+                      }}
+                      placeholder="请输入您的公司名称"
+                    />
+                  </div>
                 </FormGroup>
-                <FormGroup>
+
+                <FormGroup className="message-group">
                   <Label>留言</Label>
-                  <Textarea
-                    value={formData.message}
-                    onChange={(e) => setFormData({...formData, message: e.target.value})}
-                    rows={4}
-                  />
+                  <div>
+                    <Textarea
+                      value={formData.message}
+                      onChange={(e) => setFormData({...formData, message: e.target.value})}
+                      placeholder="请输入您的留言内容"
+                      rows={4}
+                    />
+                  </div>
                 </FormGroup>
+
                 <SubmitButton type="submit">提交咨询</SubmitButton>
               </Form>
             </ContactCard>
@@ -250,25 +268,39 @@ const Contact = () => {
   );
 };
 
-// 样式组件
+// 修改表单相关的样式组件
 const Form = styled.form`
-  max-width: 600px;
-  margin: 0 auto;
+  width: 100%;
   padding: 2rem;
 `;
 
 const FormGroup = styled.div`
+  display: grid;
+  grid-template-columns: 100px 1fr;  // 左侧标签固定宽度
+  gap: 1.5rem;
+  align-items: center;
   margin-bottom: 1.5rem;
+
+  &.message-group {
+    align-items: start;
+    margin-top: 0.5rem;
+  }
 `;
 
 const Label = styled.label`
-  display: block;
-  margin-bottom: 0.5rem;
   font-weight: 500;
+  color: #1a202c;
+  white-space: nowrap;
+
+  .required {
+    color: #ff4d4f;
+    margin-left: 4px;
+  }
 `;
 
 const Input = styled.input`
   width: 100%;
+  max-width: 400px;
   padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -276,34 +308,44 @@ const Input = styled.input`
   &:focus {
     outline: none;
     border-color: #0088ff;
+    box-shadow: 0 0 0 2px rgba(0,136,255,0.1);
   }
 `;
 
 const Textarea = styled.textarea`
   width: 100%;
+  max-width: 400px;
   padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   resize: vertical;
+  min-height: 120px;
   
   &:focus {
     outline: none;
     border-color: #0088ff;
+    box-shadow: 0 0 0 2px rgba(0,136,255,0.1);
   }
 `;
 
 const SubmitButton = styled.button`
-  width: 100%;
-  padding: 0.75rem;
+  padding: 0.75rem 2rem;
   background: #0088ff;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
+  margin-left: 100px;  // 对齐输入框
+  width: fit-content;
   
   &:hover {
     background: #0077ee;
+  }
+
+  &:disabled {
+    background: #a0aec0;
+    cursor: not-allowed;
   }
 `;
 
@@ -311,7 +353,7 @@ const ErrorText = styled.span`
   color: #ff4d4f;
   font-size: 14px;
   margin-top: 4px;
-  display: block;
+  grid-column: 2;  // 错误信息在输入框下方
 `;
 
 export default Contact;

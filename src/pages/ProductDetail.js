@@ -534,11 +534,11 @@ const ProductDetail = () => {
                   <h1>{product.name}</h1>
                   {product.code && (
                     <div className="product-code">
-                      <strong>Product Code:</strong> {product.code}
+                      <strong>产品编号:</strong> {product.code}
                     </div>
                   )}
                   {product.title && (
-                    <div className="product-description">{product.title}</div>
+                    <div className="product-description"><strong>产品简介:</strong>{product.title}</div>
                   )}
                   
                   <ButtonGroup>

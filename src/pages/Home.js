@@ -4,6 +4,8 @@ import Header from "components/headers/light.js";
 import Footer from "components/footers/FiveColumnWithInputForm.js";
 import { useNavigate } from 'react-router-dom';
 import { product } from '../api/product';
+import axios from 'axios';
+import { message } from 'antd';
 
 // 导入所需图片
 import { ReactComponent as ArrowRightIcon } from "feather-icons/dist/icons/arrow-right.svg";
@@ -291,50 +293,113 @@ const ContactSection = styled.div`
 `;
 
 const ContactGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 3rem;
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 3rem;
   
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
 `;
 
 const ContactInfo = styled.div``;
 
-const ContactForm = styled.form``;
+const InputLabel = styled.label`
+  display: grid;
+  grid-template-columns: 100px 1fr;  // 左侧标签固定宽度，右侧自适应
+  align-items: center;
+  gap: 1.5rem;
+  color: #ffffff;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+
+  &.message-label {
+    align-items: start;
+    padding-top: 0.5rem;
+  }
+`;
+
+const FormField = styled.div`
+  position: relative;
+  width: 100%;
+`;
 
 const Input = styled.input`
-  width: 100%;
   padding: 0.75rem;
+  border: 1px solid #e2e8f0;
   border-radius: 0.375rem;
-  margin-bottom: 1rem;
-  border: none;
+  font-size: 1rem;
+  width: 100%;
+  color: #1a202c;
+  background: #ffffff;
+  
+  &::placeholder {
+    color: #a0aec0;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #0088ff;
+    box-shadow: 0 0 0 2px rgba(0,136,255,0.2);
+  }
 `;
 
 const TextArea = styled.textarea`
-  width: 100%;
   padding: 0.75rem;
+  border: 1px solid #e2e8f0;
   border-radius: 0.375rem;
-  margin-bottom: 1rem;
-  border: none;
+  font-size: 1rem;
+  width: 100%;
+  resize: vertical;
+  min-height: 120px;
+  color: #1a202c;
+  background: #ffffff;
+  
+  &::placeholder {
+    color: #a0aec0;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #0088ff;
+    box-shadow: 0 0 0 2px rgba(0,136,255,0.2);
+  }
+`;
+
+const RequiredField = styled.span`
+  color: #ff4d4f;
+  margin-left: 4px;
+`;
+
+const ContactForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 `;
 
 const SubmitButton = styled.button`
+  padding: 0.75rem 2rem;
   background-color: #0088ff;
   color: white;
-  padding: 0.75rem 2rem;
-  border-radius: 0.375rem;
-  font-weight: bold;
   border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s;
+  margin-left: 100px;  // 对齐输入框
+  width: fit-content;
   
   &:hover {
     background-color: #006ee6;
+  }
+  
+  &:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
   }
 `;
 
@@ -375,6 +440,48 @@ const ProductItem = styled.div`
   }
 `;
 
+// 添加新的样式组件
+const AboutSection = styled.div`
+  padding: 5rem 0;
+  background-color: #fff;
+`;
+
+const AboutContainer = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2rem;
+`;
+
+const AboutHeader = styled.div`
+  text-align: center;
+  margin-bottom: 3rem;
+`;
+
+const AboutTitle = styled.h2`
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #1a202c;
+  margin-bottom: 1rem;
+`;
+
+const AboutContent = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  color: #4a5568;
+  line-height: 1.8;
+  font-size: 1.1rem;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  p {
+    margin-bottom: 1.5rem;
+    text-align: justify;
+  }
+`;
+
 const Home = () => {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -390,6 +497,12 @@ const Home = () => {
     total: 0
   });
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchProducts = async (pageNum = 1) => {
     try {
@@ -429,6 +542,62 @@ const Home = () => {
     navigate(`/product/${product.id}`, { state: { product } });
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // 表单验证
+    if (!formData.name.trim()) {
+      message.error('姓名为必填项');
+      return;
+    }
+    if (!formData.email.trim()) {
+      message.error('邮箱为必填项');
+      return;
+    }
+
+    // 验证邮箱格式
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      message.error('请输入有效的邮箱地址');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await axios.post('/system/inquiry', {
+        name: formData.name,
+        email: formData.email,
+        message: formData.message || ''
+      });
+
+      if (response.data.code === 200) {
+        message.success('留言提交成功！');
+        // 清空表单
+        setFormData({
+          name: '',
+          email: '',
+          message: ''
+        });
+      } else {
+        message.error(response.data.msg || '提交失败，请稍后重试');
+      }
+    } catch (error) {
+      console.error('提交留言失败:', error);
+      message.error('提交失败，请稍后重试');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Container>
       <Header />
@@ -465,10 +634,37 @@ const Home = () => {
         </StatsSection>
       </HeroSection>
       
+      {/* 添加关于我们部分 */}
+      <AboutSection>
+        <AboutContainer>
+          <AboutHeader>
+            <AboutTitle>关于我们</AboutTitle>
+          </AboutHeader>
+          <AboutContent>
+            <div>
+              <p>
+                Linkworld 成立于2005年，专注于为消费电子、安防、家电、汽车、通信、绿色能源和工业应用提供高品质定制线缆。
+              </p>
+              <p>
+                我们拥有三个通过ISO 9001和UL认证的工厂，约700名员工。我们在中国和美国的销售团队与工厂各部门保持密切合作，为客户提供快速的设计、制造和营销响应。我们的产品和服务获得了联想、LG、Griffin、Alpine、Gemalto、3M、OEHLBACH等客户的认可和赞誉。
+              </p>
+            </div>
+            <div>
+              <p>
+                经过13年的运营和与客户、供应商的良好合作，我们在解决产品需求方面建立了精密制造系统、质量控制系统、产业集成系统和研发系统的无可争议的价值。
+              </p>
+              <p>
+                Linkworld 自2005年以来专注于OEM/ODM线缆组件，目前为联想、LG、LINDY、OEHLBACH、ALTINEX等客户提供AV线缆、USB线缆、转接器等产品，并为Flextronics、3M、Jabil、Alpine、SVI提供各类线束，具有灵活的起订量、短交期、合理的价格和高品质。
+              </p>
+            </div>
+          </AboutContent>
+        </AboutContainer>
+      </AboutSection>
+
       <ProductSection id="products">
         <ProductContainer>
           <ProductHeader>
-            <ProductTitle>产品中心</ProductTitle>
+            <ProductTitle>热门产品</ProductTitle>
             <ProductSubtitle>
               专业的线缆制造技术，为您提供全方位的连接解决方案
             </ProductSubtitle>
@@ -533,16 +729,59 @@ const Home = () => {
       <ContactSection>
         <ContactGrid>
           <ContactInfo>
-            <h2 style={{fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '1.5rem'}}>联系我们</h2>
-            <p style={{marginBottom: '1rem'}}>电话：+86 XXX XXXX XXXX</p>
-            <p style={{marginBottom: '1rem'}}>邮箱：info@example.com</p>
+            <h2>联系我们</h2>
+            <p>电话：+86 XXX XXXX XXXX</p>
+            <p>邮箱：info@example.com</p>
             <p>地址：广东省深圳市XXXXXX</p>
           </ContactInfo>
-          <ContactForm>
-            <Input type="text" placeholder="您的姓名" />
-            <Input type="email" placeholder="电子邮箱" />
-            <TextArea rows="4" placeholder="请输入您的留言"></TextArea>
-            <SubmitButton type="submit">发送信息</SubmitButton>
+          <ContactForm onSubmit={handleSubmit}>
+            <InputLabel>
+              <span>姓名<RequiredField>*</RequiredField></span>
+              <FormField>
+                <Input
+                  type="text"
+                  name="name"
+                  placeholder="请输入您的姓名"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </FormField>
+            </InputLabel>
+            
+            <InputLabel>
+              <span>邮箱<RequiredField>*</RequiredField></span>
+              <FormField>
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="请输入您的邮箱"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </FormField>
+            </InputLabel>
+            
+            <InputLabel className="message-label">
+              <span>留言</span>
+              <FormField>
+                <TextArea
+                  name="message"
+                  rows="4"
+                  placeholder="请输入您的留言"
+                  value={formData.message}
+                  onChange={handleInputChange}
+                />
+              </FormField>
+            </InputLabel>
+            
+            <SubmitButton 
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? '提交中...' : '发送信息'}
+            </SubmitButton>
           </ContactForm>
         </ContactGrid>
       </ContactSection>

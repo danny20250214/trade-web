@@ -133,18 +133,6 @@ export default () => {
             </LinkList>
           </Column>
 
-          <Column>
-            <ColumnHeading>订阅我们</ColumnHeading>
-            <SubscribeFormContainer>
-              <CompanyDescription>
-                订阅我们的新闻邮件，及时了解产品更新和行业动态。
-              </CompanyDescription>
-              <SubscribeForm>
-                <Input type="email" placeholder="输入您的邮箱" />
-                <SubscribeButton type="submit">订阅</SubscribeButton>
-              </SubscribeForm>
-            </SubscribeFormContainer>
-          </Column>
         </FiveColumns>
       </Content>
     </Container>
