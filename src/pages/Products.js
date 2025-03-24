@@ -5,6 +5,9 @@ import Footer from "components/footers/FiveColumnWithInputForm.js";
 import { product } from "../api";
 import { useNavigate } from "react-router-dom";
 import { Pagination } from "antd";
+import { message } from "antd";
+import axios from "axios";
+import { DEFAULT_CONFIG } from "../config";
 
 const Container = styled.div`
   position: relative;
@@ -397,10 +400,10 @@ const Products = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const pageSize = 9;
   const navigate = useNavigate();
 
   // 获取分类树
@@ -445,49 +448,27 @@ const Products = () => {
   };
 
   // 获取产品列表
-  const fetchProducts = async (categoryId) => {
+  const fetchProducts = async (pageNum) => {
     setLoading(true);
     try {
-      const response = await product.getProducts({
-        pageNum: currentPage,
-        pageSize: pageSize,
-        categoryId
+      const response = await axios.get(`${DEFAULT_CONFIG.baseURL}/system/product/list`, {
+        params: {
+          pageNum: pageNum,
+          pageSize: pageSize,
+          categoryId: selectedCategory?.id
+        },
+        headers: DEFAULT_CONFIG.headers
       });
       
-      if (response.code === 200) {
-        const formattedProducts = response.rows.map(item => {
-          // 处理图片字段，获取第一个图片地址
-          const imageUrls = item.images ? item.images.split(',') : [];
-          const firstImage = imageUrls.length > 0 ? imageUrls[0].trim() : '';
-
-          let decodedContent = '';
-          try {
-            decodedContent = decodeURIComponent(escape(atob(item.context)));
-          } catch (error) {
-            console.error("Base64 解码失败", error);
-            decodedContent = item.context || '';
-          }
-
-          return {
-            id: item.id,
-            title: item.title || '',
-            name: item.name || '',
-            code: item.code || '',
-            description: item.name || '',
-            context: item.context || '',
-            decodedContent: decodedContent,
-            // 使用第一个图片地址，如果没有则尝试从内容中提取
-            image: firstImage || decodedContent.match(/src="([^"]+)"/)?.[1] || '',
-            // 保存所有图片地址数组，以备后用
-            images: imageUrls
-          };
-        });
-        setProducts(formattedProducts);
-        setTotal(response.total);
+      if (response.data.code === 200) {
+        setProducts(response.data.rows || []);
+        setTotal(response.data.total || 0);
+      } else {
+        message.error(response.data.msg || '获取产品列表失败');
       }
     } catch (error) {
       console.error('获取产品列表失败:', error);
-      setProducts([]);
+      message.error('获取产品列表失败，请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -501,7 +482,8 @@ const Products = () => {
   // 当选中分类变化时加载产品
   useEffect(() => {
     if (selectedCategory?.id) {
-      fetchProducts(selectedCategory.id);
+      setCurrentPage(1);  // 切换分类时重置页码
+      fetchProducts(1);   // 从第一页开始加载
     }
   }, [selectedCategory]);
 
@@ -517,15 +499,17 @@ const Products = () => {
     ));
   };
 
+  // 处理页码变化
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    fetchProducts(page);  // 请求新页面的数据
+    window.scrollTo(0, 0);  // 滚动到顶部
   };
 
   const getFirstImage = (images) => {
-    if (images && images.length > 0) {
-      return images[0];
-    }
-    return null;
+    const imageUrls = images ? images.split(',') : [];
+    const firstImage = imageUrls.length > 0 ? imageUrls[0].trim() : '';
+    return firstImage;
   };
 
   return (
@@ -541,42 +525,50 @@ const Products = () => {
 
             <ProductListContainer>
               <ProductGrid>
-                {products.map((product) => (
-                  <ProductCard 
-                    key={product.id} 
-                    onClick={() => navigate(`/product/${product.id}`)}
-                  >
-                    <ProductImage>
-                      <img 
-                        src={getFirstImage(product.images) || '/placeholder.png'} 
-                        alt={product.name} 
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = '/placeholder.png';
-                        }}
-                      />
-                    </ProductImage>
-                    <ProductInfo>
-                      <ProductName>{product.name}</ProductName>
-                      <ProductDescription>
-                        {product.description || '暂无描述'}
-                      </ProductDescription>
-                    </ProductInfo>
-                  </ProductCard>
-                ))}
+                {loading ? (
+                  <div>加载中...</div>
+                ) : products.length > 0 ? (
+                  products.map((product) => (
+                    <ProductCard 
+                      key={product.id} 
+                      onClick={() => navigate(`/product/${product.id}`)}
+                    >
+                      <ProductImage>
+                        <img 
+                          src={getFirstImage(product.images) }
+                          alt={product.name}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '';
+                          }}
+                        />
+                      </ProductImage>
+                      <ProductInfo>
+                        <ProductName>{product.name}</ProductName>
+                        <ProductDescription>
+                          {product.title }
+                        </ProductDescription>
+                      </ProductInfo>
+                    </ProductCard>
+                  ))
+                ) : (
+                  <div>暂无数据</div>
+                )}
               </ProductGrid>
               
-              <PaginationWrapper>
-                <Pagination
-                  current={currentPage}
-                  total={total}
-                  pageSize={pageSize}
-                  onChange={handlePageChange}
-                  showSizeChanger={false}
-                  showQuickJumper
-                  showTotal={(total) => `共 ${total} 条`}
-                />
-              </PaginationWrapper>
+              {total > 0 && (
+                <PaginationWrapper>
+                  <Pagination
+                    current={currentPage}
+                    total={total}
+                    pageSize={pageSize}
+                    onChange={handlePageChange}
+                    showSizeChanger={false}
+                    showQuickJumper
+                    showTotal={(total) => `共 ${total} 条`}
+                  />
+                </PaginationWrapper>
+              )}
             </ProductListContainer>
           </TabsContainer>
         </Content>
