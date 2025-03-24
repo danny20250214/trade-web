@@ -4,6 +4,7 @@ import Header from "components/headers/light.js";
 import Footer from "components/footers/FiveColumnWithInputForm.js";
 import { product } from "../api";
 import { useNavigate } from "react-router-dom";
+import { Pagination } from "antd";
 
 const Container = styled.div`
   position: relative;
@@ -17,11 +18,8 @@ const Content = styled.div`
 
 const TabsContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  @media (min-width: 1024px) {
-    flex-direction: row;
-    gap: 3rem;
-  }
+  flex-direction: row;
+  gap: 3rem;
 `;
 
 const MenuContainer = styled.div`
@@ -80,17 +78,24 @@ const SubMenuContainer = styled.div`
   }
 `;
 
+const ProductListContainer = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
 const ProductGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
-  flex: 1;
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (min-width: 1280px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  margin-bottom: 2rem;
+`;
+
+const PaginationWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+  border-top: 1px solid #e2e8f0;
 `;
 
 const ProductName = styled.h3`
@@ -185,6 +190,10 @@ const SpecItem = styled.span`
   padding: 0.25rem 0.75rem;
   border-radius: 4px;
   font-size: 0.875rem;
+`;
+
+const ProductInfo = styled.div`
+  padding: 1rem;
 `;
 
 const products = {
@@ -389,6 +398,9 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
 
   // 获取分类树
@@ -437,8 +449,8 @@ const Products = () => {
     setLoading(true);
     try {
       const response = await product.getProducts({
-        pageNum: 1,
-        pageSize: 10,
+        pageNum: currentPage,
+        pageSize: pageSize,
         categoryId
       });
       
@@ -471,6 +483,7 @@ const Products = () => {
           };
         });
         setProducts(formattedProducts);
+        setTotal(response.total);
       }
     } catch (error) {
       console.error('获取产品列表失败:', error);
@@ -504,50 +517,15 @@ const Products = () => {
     ));
   };
 
-  const renderProducts = () => {
-    if (loading) {
-      return <div style={{ textAlign: 'center', padding: '2rem' }}>加载中...</div>;
-    }
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
-    if (products.length === 0) {
-      return <div style={{ textAlign: 'center', padding: '2rem' }}>暂无产品数据</div>;
+  const getFirstImage = (images) => {
+    if (images && images.length > 0) {
+      return images[0];
     }
-
-    return products.map((product) => (
-      <ProductCard 
-        onClick={() => navigate(`/product/${product.id}`, { 
-          state: { 
-            product: {
-              ...product,
-              specs: product.specs || [],
-              context: product.context,
-              decodedContent: product.decodedContent,
-              images: product.images
-            } 
-          }
-        })} 
-        key={product.id}
-      >
-        <ProductImage>
-          {product.image ? (
-            <img src={product.image} alt={product.name} />
-          ) : (
-            <div className="no-image">暂无图片</div>
-          )}
-        </ProductImage>
-        <ProductContent>
-          <ProductName>{product.name}</ProductName>
-          {product.title && <ProductTitle>{product.title}</ProductTitle>}
-          {Array.isArray(product.specs) && product.specs.length > 0 && (
-            <ProductSpecs>
-              {product.specs.map((spec, index) => (
-                <SpecItem key={index}>{spec}</SpecItem>
-              ))}
-            </ProductSpecs>
-          )}
-        </ProductContent>
-      </ProductCard>
-    ));
+    return null;
   };
 
   return (
@@ -561,9 +539,45 @@ const Products = () => {
               {renderCategoryMenu(categories, selectedCategory, setSelectedCategory)}
             </MenuContainer>
 
-            <ProductGrid>
-              {renderProducts()}
-            </ProductGrid>
+            <ProductListContainer>
+              <ProductGrid>
+                {products.map((product) => (
+                  <ProductCard 
+                    key={product.id} 
+                    onClick={() => navigate(`/product/${product.id}`)}
+                  >
+                    <ProductImage>
+                      <img 
+                        src={getFirstImage(product.images) || '/placeholder.png'} 
+                        alt={product.name} 
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/placeholder.png';
+                        }}
+                      />
+                    </ProductImage>
+                    <ProductInfo>
+                      <ProductName>{product.name}</ProductName>
+                      <ProductDescription>
+                        {product.description || '暂无描述'}
+                      </ProductDescription>
+                    </ProductInfo>
+                  </ProductCard>
+                ))}
+              </ProductGrid>
+              
+              <PaginationWrapper>
+                <Pagination
+                  current={currentPage}
+                  total={total}
+                  pageSize={pageSize}
+                  onChange={handlePageChange}
+                  showSizeChanger={false}
+                  showQuickJumper
+                  showTotal={(total) => `共 ${total} 条`}
+                />
+              </PaginationWrapper>
+            </ProductListContainer>
           </TabsContainer>
         </Content>
       </Container>
