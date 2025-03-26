@@ -22,11 +22,9 @@ const Content = styled.div`
 
 const TabsContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  @media (min-width: 1024px) {
-    flex-direction: row;
-    gap: 3rem;
-  }
+  flex-direction: row;
+  gap: 3rem;
+  margin-top: 2rem;
 `;
 
 const MenuContainer = styled.div`
@@ -35,10 +33,11 @@ const MenuContainer = styled.div`
   border: 1px solid #e2e8f0;
   border-radius: 4px;
   overflow: hidden;
-  @media (min-width: 1024px) {
-    position: sticky;
-    top: 100px;
-  }
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
 `;
 
 const MenuTitle = styled.div`
@@ -193,9 +192,9 @@ const SpecItem = styled.span`
 `;
 
 const ProductListContainer = styled.div`
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
 `;
 
 const PaginationWrapper = styled.div`
