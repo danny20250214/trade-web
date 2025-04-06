@@ -163,19 +163,19 @@ const Contact = () => {
           <Title>联系我们</Title>
           <ContactGrid>
             <ContactCard>
-              <ContactTitle>深圳办事处</ContactTitle>
+              <ContactTitle>东莞办事处</ContactTitle>
               <ContactInfo>
                 <InfoRow>
                   <MapPinIcon />
-                  <InfoText>深圳市宝安区福永街道凤凰工业园</InfoText>
+                  <InfoText>东莞市塘厦镇178工业区民业街21号</InfoText>
                 </InfoRow>
                 <InfoRow>
                   <PhoneIcon />
-                  <InfoText>+86 139 2686 6959</InfoText>
+                  <InfoText>+86-769-87922496</InfoText>
                 </InfoRow>
                 <InfoRow>
                   <MailIcon />
-                  <InfoText>sales@linkworld.com</InfoText>
+                  <InfoText>rockhxp@126.com></InfoText>
                 </InfoRow>
               </ContactInfo>
             </ContactCard>

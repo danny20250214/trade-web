@@ -616,7 +616,7 @@ const Home = () => {
           <StatsGrid>
             <StatBox>
               <StatNumber>700+</StatNumber>
-              <StatLabel>LinkWorld专业员工</StatLabel>
+              <StatLabel>专业员工</StatLabel>
             </StatBox>
             <StatBox>
               <StatNumber>3</StatNumber>
@@ -643,7 +643,7 @@ const Home = () => {
           <AboutContent>
             <div>
               <p>
-                Linkworld 成立于2005年，专注于为消费电子、安防、家电、汽车、通信、绿色能源和工业应用提供高品质定制线缆。
+                <strong>东莞市和吉电子有限公司</strong>成立于2005年，专注于为消费电子、安防、家电、汽车、通信、绿色能源和工业应用提供高品质定制线缆。
               </p>
               <p>
                 我们拥有三个通过ISO 9001和UL认证的工厂，约700名员工。我们在中国和美国的销售团队与工厂各部门保持密切合作，为客户提供快速的设计、制造和营销响应。我们的产品和服务获得了联想、LG、Griffin、Alpine、Gemalto、3M、OEHLBACH等客户的认可和赞誉。
@@ -654,7 +654,7 @@ const Home = () => {
                 经过13年的运营和与客户、供应商的良好合作，我们在解决产品需求方面建立了精密制造系统、质量控制系统、产业集成系统和研发系统的无可争议的价值。
               </p>
               <p>
-                Linkworld 自2005年以来专注于OEM/ODM线缆组件，目前为联想、LG、LINDY、OEHLBACH、ALTINEX等客户提供AV线缆、USB线缆、转接器等产品，并为Flextronics、3M、Jabil、Alpine、SVI提供各类线束，具有灵活的起订量、短交期、合理的价格和高品质。
+                公司 自2005年以来专注于OEM/ODM线缆组件，目前为联想、LG、LINDY、OEHLBACH、ALTINEX等客户提供AV线缆、USB线缆、转接器等产品，并为Flextronics、3M、Jabil、Alpine、SVI提供各类线束，具有灵活的起订量、短交期、合理的价格和高品质。
               </p>
             </div>
           </AboutContent>
@@ -730,9 +730,9 @@ const Home = () => {
         <ContactGrid>
           <ContactInfo>
             <h2>联系我们</h2>
-            <p>电话：+86 XXX XXXX XXXX</p>
-            <p>邮箱：info@example.com</p>
-            <p>地址：广东省深圳市XXXXXX</p>
+            <p>电话：+86-769-87922496</p>
+            <p>邮箱：rockhxp@126.com</p>
+            <p>地址：东莞市塘厦镇178工业区民业街21号</p>
           </ContactInfo>
           <ContactForm onSubmit={handleSubmit}>
             <InputLabel>

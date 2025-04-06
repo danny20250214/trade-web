@@ -72,8 +72,8 @@ export default () => {
         <FiveColumns>
           <CompanyColumn>
             <LogoContainer>
-              {/* <LogoImg src={LogoImage} alt="Logo" /> */}
-              <LogoText>LinkWorld</LogoText>
+              {/* <LogoImg src={require("../../images/log/logo.png")} alt="" />*/}
+              <LogoText>东莞市和吉电子有限公司</LogoText>
             </LogoContainer>
             <CompanyDescription>
               专业的线缆制造商，为消费电子、安防、家电、汽车等领域提供高品质定制线缆解决方案。

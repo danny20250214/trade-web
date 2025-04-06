@@ -39,6 +39,13 @@ const Logo = styled.a`
   font-size: 1.8rem;
   font-weight: 700;
   
+  img {
+    width: auto;
+    height: 40px;
+    object-fit: contain;
+    margin-right: 10px;
+  }
+  
   span.link {
     color: ${props => props.isHome && !props.isScrolled ? 'white' : '#0088ff'};
     transition: color 0.3s ease;
@@ -137,8 +144,15 @@ const HeaderComponent = () => {
     <Header isHome={isHome} isScrolled={isScrolled}>
       <Nav>
         <Logo href="/" isHome={isHome} isScrolled={isScrolled}>
-          <span className="link">Link</span>
-          <span className="world">World</span>
+          {/*<img
+            src={require("../../images/log/logo.png")}
+            alt="公司logo"
+            style={{
+              filter: 'brightness(0) invert(1)',
+              filter: props => props.isHome && !props.isScrolled ? 'brightness(0) invert(1)' : 'none'
+            }}
+          />*/}
+          <span className="link">东莞市和吉电子有限公司</span>
         </Logo>
         <NavLinks>
           {navItems.map((item) => (
